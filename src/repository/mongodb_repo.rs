@@ -64,6 +64,10 @@ impl MongoRepo {
     self.col.update_one(doc! { "_id": user_id }, doc! { "$inc": { "used": storage as i64 } }, None).await.unwrap();
   }
 
+  pub async fn delete_storage(&self, user_id: String, storage: u64){
+    self.col.update_one(doc! { "_id": user_id }, doc! { "$inc": { "used": -(storage as i64) } }, None).await.unwrap();
+  }
+
   pub async fn reset_storage(&self, user_id: String){
     self.col.update_one(doc! { "_id": user_id }, doc! { "$set": { "used": 0, "settings": { "enable_sync": false } } }, None).await.unwrap();
   }
