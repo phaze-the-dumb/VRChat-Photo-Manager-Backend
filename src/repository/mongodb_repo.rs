@@ -65,6 +65,6 @@ impl MongoRepo {
   }
 
   pub async fn reset_storage(&self, user_id: String){
-    self.col.update_one(doc! { "_id": user_id }, doc! { "$set": { "used": 0 } }, None).await.unwrap();
+    self.col.update_one(doc! { "_id": user_id }, doc! { "$set": { "used": 0, "settings": { "enable_sync": false } } }, None).await.unwrap();
   }
 }
