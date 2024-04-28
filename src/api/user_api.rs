@@ -68,12 +68,11 @@ pub async fn create_user(
     }
     None => {
       let token = Randomizer::ALPHANUMERIC(64).string().unwrap();
-      dbg!(&token);
 
       let user = db.create_user(User {
         _id: user_id.to_string(),
         username: data["username"].as_str().unwrap().to_string(),
-        avatar: format!("https://cdn.phazed.xyz/id/avatars/{}/{}.png", user_id, data["avatar"].as_str().unwrap()),
+        avatar: data["avatar"].as_str().unwrap().to_owned(),
         used: 0,
         storage: 0,
         token: token,
@@ -106,7 +105,7 @@ pub async fn user_account(
 
   match user{
     Some(user) => {
-      let data = format!("{{ \"ok\": true, \"user\": {{ \"_id\": \"{}\", \"username\": \"{}\", \"avatar\": \"{}\", \"used\": \"{}\", \"storage\": \"{}\", \"settings\": {{ \"enableSync\": {} }}, \"serverVersion\": \"{}\" }} }}",
+      let data = format!("{{ \"ok\": true, \"user\": {{ \"_id\": \"{}\", \"username\": \"{}\", \"avatar\": \"{}\", \"used\": {}, \"storage\": {}, \"settings\": {{ \"enableSync\": {} }}, \"serverVersion\": \"{}\" }} }}",
         user._id,
         user.username,
         user.avatar,

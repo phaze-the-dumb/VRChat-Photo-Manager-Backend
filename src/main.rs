@@ -23,5 +23,9 @@ async fn main(){
 
     status_api::status_check
   ])
+    .configure(rocket::Config::figment()
+      .merge(("port", 7002))
+      .merge(("address", "0.0.0.0"))
+    )
     .launch().await.unwrap();
 }
