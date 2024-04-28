@@ -16,6 +16,10 @@ async fn main(){
     user_api::create_user_no_token,
     user_api::create_user_denied,
 
+    user_api::deauth_account,
+
+    user_api::update_profile,
+
     user_api::user_account,
 
     storage_api::check_upload,

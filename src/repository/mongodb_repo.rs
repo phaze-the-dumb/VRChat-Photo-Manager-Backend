@@ -17,17 +17,12 @@ impl MongoRepo {
       Err(_) => format!("Error loading env variable"),
     };
 
-    dbg!(&uri);
     let client = Client::with_uri_str(uri).await.unwrap();
     let db = client.database("vrcpm");
 
     db.run_command(doc! { "ping": 1 }, None).await.unwrap();
 
     let col: Collection<User> = db.collection("Users");
-
-    let coll_list = db.list_collection_names(doc! {}).await.unwrap();
-    println!("{:?}", coll_list);
-
     MongoRepo { col }
   }
 
