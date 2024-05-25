@@ -42,6 +42,8 @@ pub async fn create_user(
         db.update_user_avatar(user_id.to_string(), data["avatar"].as_str().unwrap().to_string()).await;
       }
 
+      db.update_user_id_token(user_id.to_string(), token).await;
+
       let html = format!("<style>body{{ background: black; color: white; }}</style>Authentication flow finished, you may close this tab now <script>window.location.href = ('vrcpm://auth-callback/{}')</script>", user.token);
       return Ok(content::RawHtml(html));
     }

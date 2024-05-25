@@ -60,6 +60,10 @@ impl MongoRepo {
     self.col.update_one(doc! { "_id": user_id }, doc! { "$set": { "avatar": avatar } }, None).await.unwrap();
   }
 
+  pub async fn update_user_id_token(&self, user_id: String, token: String){
+    self.col.update_one(doc! { "_id": user_id }, doc! { "$set": { "id_token": token } }, None).await.unwrap();
+  }
+
   pub async fn use_storage(&self, user_id: String, storage: u64){
     self.col.update_one(doc! { "_id": user_id }, doc! { "$inc": { "used": storage as i64 } }, None).await.unwrap();
   }
