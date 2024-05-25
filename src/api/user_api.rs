@@ -19,7 +19,7 @@ pub async fn create_user(
 ) -> Result<content::RawHtml<String>, Status> {
   let client = reqwest::Client::new();
 
-  let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &token))
+  let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}&apptoken={}", &token, env::var("APP_TOKEN").unwrap()))
     .send().await.unwrap()
     .text().await.unwrap();
 
@@ -89,7 +89,7 @@ pub async fn user_account(
     Some(user) => {
       let client = reqwest::Client::new();
 
-      let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &user.id_token))
+      let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}&apptoken={}", &user.id_token, env::var("APP_TOKEN").unwrap()))
         .send().await.unwrap()
         .text().await.unwrap();
     
