@@ -12,41 +12,20 @@ pub async fn create_user_no_token(
   Redirect::to(app_uri)
 }
 
-#[get("/api/v1/auth?<token>&<id>")]
+#[get("/api/v1/auth?<token>")]
 pub async fn create_user(
   db: &State<MongoRepo>,
-  token: String,
-  id: String
+  token: String
 ) -> Result<content::RawHtml<String>, Status> {
   let client = reqwest::Client::new();
 
-  let auth_req = client.put(format!("https://api.phazed.xyz/id/v1/oauth/enable?apptoken={}&sesid={}", env::var("APP_TOKEN").unwrap(), id))
-    .send().await.unwrap()
-    .text().await.unwrap();
-
-  let auth: Value = serde_json::from_str(&auth_req).unwrap();
-
-  if auth["ok"].as_bool().unwrap() == false {
-    return Err(Status::InternalServerError);
-  }
-
-  let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", token))
+  let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &token))
     .send().await.unwrap()
     .text().await.unwrap();
 
   let data: Value = serde_json::from_str(&data_req).unwrap();
 
   if data["ok"].as_bool().unwrap() == false {
-    return Err(Status::InternalServerError);
-  }
-
-  let trash_req = client.delete(format!("https://api.phazed.xyz/id/v1/oauth?token={}", token))
-    .send().await.unwrap()
-    .text().await.unwrap();
-
-  let trash: Value = serde_json::from_str(&trash_req).unwrap();
-
-  if trash["ok"].as_bool().unwrap() == false {
     return Err(Status::InternalServerError);
   }
 
@@ -101,10 +80,30 @@ pub async fn user_account(
   db: &State<MongoRepo>,
   token: String
 ) -> content::RawJson<String> {
-  let user = db.find_user_by_token(token).await;
+  let user = db.find_user_by_token(token.clone()).await;
 
   match user{
     Some(user) => {
+      let client = reqwest::Client::new();
+
+      let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &token))
+        .send().await.unwrap()
+        .text().await.unwrap();
+    
+      let data: Value = serde_json::from_str(&data_req).unwrap();
+    
+      if data["ok"].as_bool().unwrap() == false {
+        return content::RawJson("{\"ok\":false}".to_owned());
+      }
+
+      if data["username"].as_str().unwrap().to_string() != user.username {
+        db.update_user_username(user._id.clone(), data["username"].as_str().unwrap().to_string()).await;
+      }
+
+      if data["avatar"].as_str().unwrap().to_string() != user.username {
+        db.update_user_avatar(user._id.clone(), data["avatar"].as_str().unwrap().to_string()).await;
+      }
+
       let data = format!("{{ \"ok\": true, \"user\": {{ \"_id\": \"{}\", \"username\": \"{}\", \"avatar\": \"{}\", \"used\": {}, \"storage\": {}, \"settings\": {{ \"enableSync\": {} }}, \"serverVersion\": \"{}\" }} }}",
         user._id,
         user.username,
