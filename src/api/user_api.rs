@@ -1,5 +1,5 @@
 use crate::{ models::user_model::{ User, UserSettings }, repository::mongodb_repo::MongoRepo };
-use rocket::{ http::{HeaderMap, Status}, request::{self, FromRequest, Outcome}, response::{ content, Redirect }, Error, Request, State };
+use rocket::{ http::Status, response::{ content, Redirect }, State };
 use randomizer::Randomizer;
 use serde_json::Value;
 use std::env;
