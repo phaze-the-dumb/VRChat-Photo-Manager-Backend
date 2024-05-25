@@ -46,7 +46,7 @@ pub async fn create_user(
       return Ok(content::RawHtml(html));
     }
     None => {
-      let token = Randomizer::ALPHANUMERIC(64).string().unwrap();
+      let utoken = Randomizer::ALPHANUMERIC(64).string().unwrap();
 
       let user = db.create_user(User {
         _id: user_id.to_string(),
@@ -54,7 +54,8 @@ pub async fn create_user(
         avatar: data["avatar"].as_str().unwrap().to_owned(),
         used: 0,
         storage: 0,
-        token: token,
+        token: utoken,
+        id_token: token,
         server_version: "1.1".to_string(),
         settings: UserSettings {
           enable_sync: false
@@ -86,7 +87,7 @@ pub async fn user_account(
     Some(user) => {
       let client = reqwest::Client::new();
 
-      let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &token))
+      let data_req = client.get(format!("https://api.phazed.xyz/id/v1/profile/@me?token={}", &user.id_token))
         .send().await.unwrap()
         .text().await.unwrap();
     
@@ -145,54 +146,13 @@ pub async fn deauth_account(
   }
 }
 
-#[derive(Debug)]
-pub struct RequestHeaders<'h>(&'h HeaderMap<'h>);
+// pub struct RequestHeaders<'h>(&'h HeaderMap<'h>);
 
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for RequestHeaders<'r> {
-  type Error = Error;
-  async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
-    let request_headers = req.headers();
-    Outcome::Success(RequestHeaders(request_headers))
-  }
-}
-
-#[get("/api/v1/updateProfile?<key>")]
-pub async fn update_profile(
-  db: &State<MongoRepo>,
-  key: String,
-  headers: RequestHeaders<'_>
-) -> content::RawJson<String> {
-  if key != env::var("UPDATE_KEY").unwrap(){
-    return content::RawJson("{\"ok\":false}".to_owned());
-  }
-
-  let update_type = headers.0.get("update-type").nth(0);
-  let user_id = headers.0.get("user").nth(0);
-  let value = headers.0.get("value").nth(0);
-
-  if update_type.is_none() {
-    return content::RawJson("{\"ok\":false}".to_owned());
-  }
-
-  if user_id.is_none() {
-    return content::RawJson("{\"ok\":false}".to_owned());
-  }
-
-  if value.is_none() {
-    return content::RawJson("{\"ok\":false}".to_owned());
-  }
-
-  let user = db.find_user(user_id.unwrap().to_owned()).await;
-  if user.is_none() {
-    return content::RawJson("{\"ok\":false}".to_owned());
-  }
-
-  match update_type.unwrap(){
-    "avatar" => { db.update_user_avatar(user_id.unwrap().to_owned(), value.unwrap().to_owned()).await; },
-    "username" => { db.update_user_username(user_id.unwrap().to_owned(), value.unwrap().to_owned()).await; },
-    _ => {}
-  }
-
-  content::RawJson("{\"ok\":true}".to_owned())
-}
+// #[rocket::async_trait]
+// impl<'r> FromRequest<'r> for RequestHeaders<'r> {
+//   type Error = Error;
+//   async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+//     let request_headers = req.headers();
+//     Outcome::Success(RequestHeaders(request_headers))
+//   }
+// }

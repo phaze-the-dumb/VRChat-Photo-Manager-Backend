@@ -13,6 +13,7 @@ pub struct User{
   pub used: u64,
   pub storage: u64,
   pub token: String,
+  pub id_token: String,
   pub server_version: String,
   pub settings: UserSettings
 }
